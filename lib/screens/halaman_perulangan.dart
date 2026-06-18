@@ -1,48 +1,121 @@
 import 'package:flutter/material.dart';
+import '../database/db_helper.dart'; // Sesuaikan path
 
-class ReviewScreen extends StatelessWidget {
+class ReviewScreen extends StatefulWidget {
   const ReviewScreen({super.key});
+
+  @override
+  State<ReviewScreen> createState() => _ReviewScreenState();
+}
+
+class _ReviewScreenState extends State<ReviewScreen> {
+  
+  // Fungsi untuk mengambil dan mengelompokkan data
+  Future<Map<String, List<Map<String, dynamic>>>> _fetchAndGroupReviews() async {
+    final allVocab = await DatabaseHelper.instance.readAllVocabulary();
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final tomorrow = today.add(const Duration(days: 1));
+
+    List<Map<String, dynamic>> todayList = [];
+    List<Map<String, dynamic>> tomorrowList = [];
+    List<Map<String, dynamic>> upcomingList = [];
+
+    for (var vocab in allVocab) {
+      DateTime reviewDate = DateTime.parse(vocab['next_review_date']);
+      DateTime normalizedReviewDate = DateTime(reviewDate.year, reviewDate.month, reviewDate.day);
+
+      if (normalizedReviewDate.isBefore(tomorrow)) {
+        todayList.add(vocab);
+      } else if (normalizedReviewDate.isAtSameMomentAs(tomorrow)) {
+        tomorrowList.add(vocab);
+      } else {
+        upcomingList.add(vocab);
+      }
+    }
+
+    return {
+      'today': todayList,
+      'tomorrow': tomorrowList,
+      'upcoming': upcomingList,
+    };
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Perulangan", style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.white, elevation: 0,
+        backgroundColor: Colors.white,
+        elevation: 0,
       ),
       backgroundColor: Colors.white,
-      body: ListView(
-        padding: const EdgeInsets.all(16.0),
-        children: [
-          const Text("Ulangi kosakata untuk ingatan jangka panjang", style: TextStyle(color: Colors.grey)),
-          const SizedBox(height: 16),
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(color: const Color(0xFF3F51B5), borderRadius: BorderRadius.circular(16)),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text("STATUS SRS", style: TextStyle(color: Colors.white70, fontSize: 10)),
-                const Text("Review Hari Ini", style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
-                const Text("12 Kata Perlu Diulang", style: TextStyle(color: Colors.white, fontSize: 14)),
-                const SizedBox(height: 16),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.white, foregroundColor: Colors.blue),
-                  onPressed: () {},
-                  child: const Text("MULAI REVIEW"),
+      body: FutureBuilder<Map<String, List<Map<String, dynamic>>>>(
+        future: _fetchAndGroupReviews(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (snapshot.hasError) {
+            return Center(child: Text("Error: ${snapshot.error}"));
+          }
+
+          final groupedData = snapshot.data!;
+          final todayList = groupedData['today']!;
+          final tomorrowList = groupedData['tomorrow']!;
+          final upcomingList = groupedData['upcoming']!;
+
+          return ListView(
+            padding: const EdgeInsets.all(16.0),
+            children: [
+              const Text("Ulangi kosakata untuk ingatan jangka panjang", style: TextStyle(color: Colors.grey)),
+              const SizedBox(height: 16),
+              
+              // SRS Banner Dinamis
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(color: const Color(0xFF3F51B5), borderRadius: BorderRadius.circular(16)),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text("STATUS SRS", style: TextStyle(color: Colors.white70, fontSize: 10)),
+                    const Text("Review Hari Ini", style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+                    Text("${todayList.length} Kata Perlu Diulang", style: const TextStyle(color: Colors.white, fontSize: 14)),
+                  ],
                 ),
+              ),
+              const SizedBox(height: 24),
+              
+              // Section: Hari Ini
+              if (todayList.isNotEmpty) ...[
+                _buildSectionHeader("Hari Ini", "Penting", Colors.red),
+                ...todayList.map((vocab) => _buildReviewItem(vocab['word'], vocab['meaning'], "Hari Ini")),
+                const SizedBox(height: 16),
               ],
-            ),
-          ),
-          const SizedBox(height: 24),
-          _buildSectionHeader("Hari Ini", "Penting", Colors.red),
-          _buildReviewItem("Hesitate", "Ragu-ragu", "5 Kg"),
-          _buildReviewItem("Subtle", "Halus / Samar", "5 Kg"),
-          const SizedBox(height: 16),
-          _buildSectionHeader("Besok", "23 Kata", Colors.orange),
-          _buildReviewItem("Diligent", "Rajin", "Besok"),
-          _buildReviewItem("Ambiguous", "Bermakna ganda", "Besok"),
-        ],
+              
+              // Section: Besok
+              if (tomorrowList.isNotEmpty) ...[
+                _buildSectionHeader("Besok", "${tomorrowList.length} Kata", Colors.orange),
+                ...tomorrowList.map((vocab) => _buildReviewItem(vocab['word'], vocab['meaning'], "Besok")),
+                const SizedBox(height: 16),
+              ],
+
+              // Section: Mendatang
+              if (upcomingList.isNotEmpty) ...[
+                _buildSectionHeader("Mendatang", "${upcomingList.length} Kata", Colors.green),
+                ...upcomingList.map((vocab) => _buildReviewItem(vocab['word'], vocab['meaning'], "${vocab['interval_days']} Hari")),
+              ],
+
+              // Jika semua kosong
+              if (todayList.isEmpty && tomorrowList.isEmpty && upcomingList.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.only(top: 40),
+                  child: Center(child: Text("Belum ada kosakata di jadwalmu.", style: TextStyle(color: Colors.grey))),
+                )
+            ],
+          );
+        },
       ),
     );
   }

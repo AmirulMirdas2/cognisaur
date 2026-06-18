@@ -14,12 +14,12 @@ class MainNavigation extends StatefulWidget {
 }
 
 class _MainNavigationState extends State<MainNavigation> {
-  int _selectedIndex = 2; // Default ke tab 'Latihan' sesuai desain
+  int _selectedIndex = 0; // Default ke tab 'Beranda'
 
   static const List<Widget> _widgetOptions = <Widget>[
     HomeScreen(),
     CollectionScreen(),
-    VocabularyDetailScreen(),
+    PracticeTabWrapper(),
     ReviewScreen(),
     ProfileScreen(),
   ];

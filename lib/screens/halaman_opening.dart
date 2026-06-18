@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'halaman_main_menu.dart';
+import 'login_screen.dart';
 
 // --- HALAMAN 1: OPENING 1 ---
 class Opening1 extends StatelessWidget {
@@ -189,9 +189,9 @@ class Opening4 extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () => Navigator.push(
+                onPressed: () => Navigator.pushReplacement(
                   context,
-                  MaterialPageRoute(builder: (context) => const MainMenu()),
+                  MaterialPageRoute(builder: (context) => const LoginScreen()),
                 ),
                 child: const Text("MULAI"),
               ),
