@@ -3,6 +3,7 @@ import '../services/gemini_service.dart';
 import '../database/db_helper.dart';
 import '../services/user_prefs.dart';
 import '../services/tts_service.dart';
+import '../services/dictionary_service.dart';
 
 // --- 1. HALAMAN DETAIL KOSAKATA ---
 class VocabularyDetailScreen extends StatelessWidget {
@@ -17,7 +18,15 @@ class VocabularyDetailScreen extends StatelessWidget {
     final String meaning = vocabData['meaning'];
     final String exampleEn = vocabData['example_en'];
     final String exampleId = vocabData['example_id'];
-    // Jika Anda punya kolom 'type' atau 'level', bisa dipanggil di sini. Sementara kita pakai default.
+    
+    // Mendapatkan tipe kata dan status
+    final String wordType = DictionaryService.getWordType(word);
+    final String wordStatus = vocabData['status'] ?? 'BARU';
+    
+    Color statusColor = Colors.grey;
+    if (wordStatus == 'KUAT') statusColor = Colors.green;
+    else if (wordStatus == 'SEDANG') statusColor = Colors.orange;
+    else if (wordStatus == 'LEMAH') statusColor = Colors.red;
 
     return Scaffold(
       appBar: AppBar(
@@ -29,10 +38,10 @@ class VocabularyDetailScreen extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Row(
-              children: const [
-                Icon(Icons.local_fire_department, color: Colors.orange, size: 20),
-                SizedBox(width: 4),
-                Text("12", style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold)),
+              children: [
+                const Icon(Icons.local_fire_department, color: Colors.orange, size: 20),
+                const SizedBox(width: 4),
+                Text(UserPreferences.getStreak().toString(), style: const TextStyle(color: Colors.blue, fontWeight: FontWeight.bold)),
               ],
             ),
           )
@@ -48,7 +57,10 @@ class VocabularyDetailScreen extends StatelessWidget {
               height: 150,
               width: 150,
               decoration: BoxDecoration(color: Colors.grey[200], borderRadius: BorderRadius.circular(16)),
-              child: const Icon(Icons.psychology, size: 80, color: Colors.blue), 
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: Image.asset('assets/IconLatihan.png', fit: BoxFit.cover),
+              ),
             ),
             const SizedBox(height: 20),
             Row(
@@ -85,12 +97,12 @@ class VocabularyDetailScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             
-            // Type & Level Row (Statis sementara karena tidak ada di DB, bisa disesuaikan nanti)
+            // Type & Status Row (Dinamis dari Data)
             Row(
               children: [
-                Expanded(child: _buildInfoCard("TYPE", "Verb")),
+                Expanded(child: _buildInfoCard("TYPE", wordType)),
                 const SizedBox(width: 16),
-                Expanded(child: _buildInfoCard("LEVEL", "B2", valueColor: Colors.green)),
+                Expanded(child: _buildInfoCard("STATUS", wordStatus, valueColor: statusColor)),
               ],
             ),
             const SizedBox(height: 30),
@@ -461,16 +473,16 @@ class EvaluationResultScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Row(
-                      children: const [
-                        Icon(
+                      children: [
+                        const Icon(
                           Icons.local_fire_department,
                           color: Colors.blue,
                           size: 18,
                         ),
-                        SizedBox(width: 4),
+                        const SizedBox(width: 4),
                         Text(
-                          "12",
-                          style: TextStyle(
+                          UserPreferences.getStreak().toString(),
+                          style: const TextStyle(
                             color: Colors.blue,
                             fontWeight: FontWeight.bold,
                           ),

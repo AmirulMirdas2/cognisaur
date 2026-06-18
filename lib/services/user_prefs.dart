@@ -110,6 +110,15 @@ class UserPreferences {
     return _prefs.getBool('is_logged_in') ?? false;
   }
 
+  // --- PREFERENSI JENIS KATA ---
+  static String getWordTypeFocus() {
+    return _prefs.getString('word_type_focus') ?? 'Semua'; 
+  }
+
+  static Future<void> setWordTypeFocus(String type) async {
+    await _prefs.setString('word_type_focus', type);
+  }
+
   // --- RESET DATA ---
   static Future<void> clearAll() async {
     await _prefs.clear(); // Menghapus seluruh data di SharedPreferences

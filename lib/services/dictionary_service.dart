@@ -2,34 +2,60 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:translator/translator.dart';
 import '../database/db_helper.dart'; // Sesuaikan path
+import 'user_prefs.dart';
 
 class DictionaryService {
   // Inisialisasi translator
   static final translator = GoogleTranslator();
 
-  // Daftar kata mentah (Bisa diperpanjang nanti)
-  static const List<String> _rawWords = [
-    'ubiquitous', 'resilient', 'meticulous', 'eloquent', 'innovative',
-    'procrastinate', 'abundant', 'lucid', 'pragmatic', 'ephemeral'
-  ];
+  // 1. KELOMPOKKAN KATA MENTAH BERDASARKAN JENISNYA
+  static const Map<String, List<String>> _categorizedWords = {
+    'Noun': ['resilience', 'philosophy', 'metaphor', 'innovation', 'obstacle'],
+    'Verb': ['persist', 'hesitate', 'evaluate', 'procrastinate', 'mitigate'],
+    'Adjective': ['ubiquitous', 'meticulous', 'subtle', 'eloquent', 'pragmatic'],
+  };
+
+  // Fungsi pembantu untuk mendapatkan tipe kata
+  static String getWordType(String word) {
+    for (var entry in _categorizedWords.entries) {
+      if (entry.value.contains(word.toLowerCase())) {
+        return entry.key;
+      }
+    }
+    return "Vocabulary";
+  }
 
   // Fungsi untuk mendapatkan Kosakata Baru
   static Future<Map<String, dynamic>?> fetchNewVocabulary() async {
     final db = await DatabaseHelper.instance.database;
 
-    // 1. Cari kata yang belum ada di SQLite
+    // 2. AMBIL FOKUS BELAJAR PENGGUNA SAAT INI
+    String focus = UserPreferences.getWordTypeFocus();
+    
+    List<String> poolOfWords = [];
+
+    // 3. TENTUKAN SUMBER KATA BERDASARKAN FOKUS
+    if (focus == 'Semua') {
+      // Gabungkan semua kata dari semua kategori
+      _categorizedWords.values.forEach((list) => poolOfWords.addAll(list));
+    } else {
+      // Ambil kata hanya dari kategori yang dipilih (misal 'Noun' atau 'Verb')
+      poolOfWords = List.from(_categorizedWords[focus] ?? []);
+    }
+
+    // Acak urutan agar lebih natural (Opsional)
+    poolOfWords.shuffle();
+
     String? wordToLearn;
-    for (String word in _rawWords) {
-      // Cek apakah kata ini sudah ada di database
+    for (String word in poolOfWords) {
       final result = await db.query('vocabulary', where: 'word = ?', whereArgs: [word]);
       if (result.isEmpty) {
         wordToLearn = word;
-        break; // Dapatkan 1 kata dan hentikan pencarian
+        break; 
       }
     }
 
-    // Jika semua kata sudah dipelajari
-    if (wordToLearn == null) return null;
+    if (wordToLearn == null) return null; // Jika habis
 
     // 2. Panggil Free Dictionary API
     final url = Uri.parse('https://api.dictionaryapi.dev/api/v2/entries/en/$wordToLearn');

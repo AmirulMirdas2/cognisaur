@@ -215,6 +215,37 @@ class _HomeScreenState extends State<HomeScreen> {
                             const SizedBox(height: 4),
                             const Text("Pelajari kata baru hari ini untuk memperluas bank katamu.", style: TextStyle(color: Colors.grey, fontSize: 12)),
                             const SizedBox(height: 12),
+                            
+                            // TAMBAHKAN DROPDOWN INI UNTUK MEMILIH FOKUS
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 12),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: Colors.blue.shade200)
+                              ),
+                              child: DropdownButtonHideUnderline(
+                                child: DropdownButton<String>(
+                                  value: UserPreferences.getWordTypeFocus(),
+                                  isExpanded: true,
+                                  icon: const Icon(Icons.arrow_drop_down, color: Colors.blue),
+                                  items: const [
+                                    DropdownMenuItem(value: 'Semua', child: Text("Campur Semua")),
+                                    DropdownMenuItem(value: 'Noun', child: Text("Kata Benda (Noun)")),
+                                    DropdownMenuItem(value: 'Verb', child: Text("Kata Kerja (Verb)")),
+                                    DropdownMenuItem(value: 'Adjective', child: Text("Kata Sifat (Adjective)")),
+                                  ],
+                                  onChanged: (String? newValue) async {
+                                    if (newValue != null) {
+                                      await UserPreferences.setWordTypeFocus(newValue);
+                                      setState(() {}); // Refresh UI agar Dropdown terupdate
+                                    }
+                                  },
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+
                             OutlinedButton(
                               style: OutlinedButton.styleFrom(side: const BorderSide(color: Color(0xFF3F51B5)), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20))),
                               onPressed: () async {
