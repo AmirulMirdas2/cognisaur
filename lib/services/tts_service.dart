@@ -1,3 +1,16 @@
+/// File: tts_service.dart
+/// Fungsi Utama: Menyediakan fitur Text-To-Speech (TTS) atau pembaca teks menjadi suara.
+///
+/// Logika & Cara Kerja:
+/// 1. Menggunakan library `flutter_tts` bawaan perangkat pengguna.
+/// 2. Mengkonfigurasi bahasa ke Bahasa Inggris Amerika ("en-US"), serta mengatur
+///    kecepatan bicara (speech rate) dan nada (pitch).
+/// 3. Memiliki fungsi `speak()` untuk membacakan teks dan `stop()` untuk menghentikannya.
+///
+/// Tips Modifikasi:
+/// Jika Anda ingin mengganti suara AI menjadi suara khusus (contoh: Google Cloud TTS,
+/// ElevenLabs, atau OpenAI TTS API), Anda dapat menaruh kode API pemanggilannya di dalam 
+/// fungsi `speak()` ini agar langsung berlaku di seluruh UI.
 import 'package:flutter/foundation.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 

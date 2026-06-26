@@ -1,3 +1,17 @@
+/// File: db_helper.dart
+/// Fungsi Utama: Bertindak sebagai pengelola database lokal (SQLite) untuk aplikasi CogniSaur.
+///
+/// Logika & Cara Kerja:
+/// 1. Inisialisasi: Membuat file database lokal bernama 'cognisaur.db'.
+/// 2. Skema Tabel: Menyiapkan tabel `vocabulary` (kosakata & status hafalan SRS)
+///    dan tabel `daily_statistics` (statistik belajar harian).
+/// 3. Spaced Repetition System (SRS): Fungsi `updateSRS` menjalankan algoritma SuperMemo-2 (SM-2)
+///    untuk menghitung otomatis jarak hari (interval) kapan sebuah kata harus diulang kembali.
+///
+/// Tips Modifikasi:
+/// Jika Anda ingin menambahkan atribut baru pada database (contoh: kolom 'jenis_kata' / noun, verb),
+/// Anda wajib menambahkan skema barunya di dalam query `CREATE TABLE vocabulary` 
+/// dan meningkatkan versi database di `openDatabase(..., version: 2)`.
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
@@ -58,71 +72,7 @@ class DatabaseHelper {
     // await _insertSeedData(db);
   }
 
-  // Future _insertSeedData(Database db) async {
-  //   final today = DateTime.now().toIso8601String(); // Default review hari ini
-
-  //   List<Map<String, dynamic>> initialVocabs = [
-  //     {
-  //       'word': 'Hesitate',
-  //       'meaning': 'Ragu-ragu / Bimbang',
-  //       'example_en': "Don't hesitate to try new things.",
-  //       'example_id': "Jangan ragu untuk mencoba hal baru.",
-  //       'status': 'LEMAH',
-  //       'next_review_date': today,
-  //       'ease_factor': 2.5,
-  //       'interval_days': 0,
-  //       'repetitions': 0,
-  //     },
-  //     {
-  //       'word': 'Diligent',
-  //       'meaning': 'Rajin',
-  //       'example_en': "She is a diligent student.",
-  //       'example_id': "Dia adalah murid yang rajin.",
-  //       'status': 'SEDANG',
-  //       'next_review_date': today,
-  //       'ease_factor': 2.5,
-  //       'interval_days': 0,
-  //       'repetitions': 0,
-  //     },
-  //     {
-  //       'word': 'Persist',
-  //       'meaning': 'Bertahan / Gigih',
-  //       'example_en': "If you persist, you will succeed.",
-  //       'example_id': "Jika kamu gigih, kamu akan berhasil.",
-  //       'status': 'KUAT',
-  //       'next_review_date': today,
-  //       'ease_factor': 2.5,
-  //       'interval_days': 0,
-  //       'repetitions': 0,
-  //     },
-  //     {
-  //       'word': 'Ambiguous',
-  //       'meaning': 'Bermakna ganda / Tidak jelas',
-  //       'example_en': "His answer was very ambiguous.",
-  //       'example_id': "Jawabannya sangat ambigu.",
-  //       'status': 'LEMAH',
-  //       'next_review_date': today,
-  //       'ease_factor': 2.5,
-  //       'interval_days': 0,
-  //       'repetitions': 0,
-  //     },
-  //     {
-  //       'word': 'Subtle',
-  //       'meaning': 'Halus / Samar',
-  //       'example_en': "There is a subtle difference between the two.",
-  //       'example_id': "Ada perbedaan yang samar di antara keduanya.",
-  //       'status': 'SEDANG',
-  //       'next_review_date': today,
-  //       'ease_factor': 2.5,
-  //       'interval_days': 0,
-  //       'repetitions': 0,
-  //     },
-  //   ];
-
-  //   for (var vocab in initialVocabs) {
-  //     await db.insert('vocabulary', vocab);
-  //   }
-  // }
+ 
 
   // Fungsi utilitas untuk membaca semua kosakata
   Future<List<Map<String, dynamic>>> readAllVocabulary() async {

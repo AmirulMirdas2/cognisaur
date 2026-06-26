@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/user_prefs.dart';
+import '../database/db_helper.dart';
 import 'main_navigation.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -47,6 +48,12 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     } else {
       // PROSES REGISTER
+      // 1. Bersihkan seluruh preferensi lama (XP, streak, dll) dari pengguna sebelumnya
+      await UserPreferences.clearAll();
+      // 2. Bersihkan database agar koleksi/kosakata kembali kosong
+      await DatabaseHelper.instance.clearAllData();
+
+      // 3. Simpan kredensial akun baru
       await UserPreferences.registerUser(username, email, password);
       // Langsung login setelah register
       await UserPreferences.setUserName(username);
